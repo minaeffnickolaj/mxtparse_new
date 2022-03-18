@@ -1,4 +1,4 @@
-package mxtparsenew
+package main
 
 // struct of Rigla RDP connection in MobaXTerm
 
@@ -14,4 +14,7 @@ type RDP struct {
 // struct of Rigla VNC (cashier PC) connection in MobaXTerm
 
 type VNC struct {
+	APCode        string
+	AptName       string
+	ServerAddress string
 }
