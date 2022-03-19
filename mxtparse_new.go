@@ -54,7 +54,7 @@ func WriteToFile(FileName *os.File, EncodedChannel chan []byte) {
 	}()
 	ParsedString := string(<-EncodedChannel) //[]byte to str
 	//create encoder
-	IBM855Encode := charmap.CodePage855.NewEncoder()
+	IBM855Encode := charmap.Windows1251.NewEncoder()
 	ConnectionString, _ := IBM855Encode.String(ParsedString)
 	FileName.Write([]byte(ConnectionString))
 }
