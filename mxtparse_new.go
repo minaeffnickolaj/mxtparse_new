@@ -14,7 +14,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 	"sync"
 	"text/template"
@@ -157,8 +156,24 @@ func main() {
 			go WriteToFile(OutFile, ParsedChannelOut)
 		}
 	} else {
-		for i := 0; i <= runtime.NumCPU(); i++ {
-
+		// declare template
+		MXTTemplate := template.New("MobaXTermTemplate")
+		MXTTemplateText := "\n\n[Bookmarks_{{.RecordNum}}]\nSubRep={{.RKName}}\\{{.AptName}}\nImgNum=41\n{{.AptName}}({{.APCode}})=#91#4%{{.ServerAddress}}srv.apt.rigla.ru%10433%[{{.Username}}]%0%-1%-1%-1%-1%0%0%-1%%%%%0%0%%-1%%-1%-1%0%-1%0%-1#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1\n{{.AptName}}({{.APCode}}) - Директор= #91#4%{{.ServerAddress}}dir.apt.rigla.ru%10433%[efarma]%0%-1%-1%-1%-1%0%0%-1%%%%%0%0%%-1%%-1%-1%0%-1%0%-1#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1\n{{.AptName}}({{.APCode}}) - Касса 1= #128#5%{{.ServerAddress}}km1.apt.rigla.ru%15903%-1%0%%%%%-1%0#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1\n{{.AptName}}({{.APCode}})- Касса 2= #128#5%{{.ServerAddress}}km2.apt.rigla.ru%15903%-1%0%%%%%-1%0#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1\n{{.AptName}}({{.APCode}}) - Касса 3= #128#5%{{.ServerAddress}}km3.apt.rigla.ru%15903%-1%0%%%%%-1%0#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1\n{{.AptName}}({{.APCode}}) - Касса 4= #128#5%{{.ServerAddress}}km4.apt.rigla.ru%15903%-1%0%%%%%-1%0#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1"
+		MXTTemplate.Parse(MXTTemplateText)
+		//create output file
+		OutFile, err := os.OpenFile(*OutputFile, os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+		defer func() {
+			OutFile.Close()
+		}()
+		//end of output file description
+		for i := 0; i <= XLSXConnCount; i++ { //goroutine count will be equal CPU core count
+			WorkGroup.Add(1)
+			go ParseTemplate(MXTTemplate, XLSXChannelOut, ParsedChannelOut)
+			WorkGroup.Add(1)
+			go WriteToFile(OutFile, ParsedChannelOut)
 		}
 	}
 	ReadXLSXFile(XLSX, "Аптеки", XLSXChannelOut) // read from file to channel
