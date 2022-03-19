@@ -61,9 +61,6 @@ func WriteToFile(FileName *os.File, EncodedChannel chan []byte) {
 
 // read file line by line from XLSX list, creating RDP struct and take it to free goroutine
 func ReadXLSXFile(XLSXFile *excelize.File, ListName string, ChannelOut chan RDP) {
-	defer func() {
-		WorkGroup.Done()
-	}()
 	Rows, err := XLSXFile.GetRows(ListName)
 	if err != nil {
 		println(err)
@@ -115,6 +112,14 @@ func OpenXLSXFile(Filepath string) *excelize.File {
 	return File
 }
 
+func RowCountXLSX(XLSX *excelize.File, Sheet string) int {
+	Rows, err := XLSX.GetRows(Sheet)
+	if err != nil {
+		println(err)
+	}
+	return len(Rows)
+}
+
 // flag declarations according to types of variables
 func init() {
 	InputFile = flag.String("InputFile", "apt.xlsx", "Filepath to input XLSX file")
@@ -124,12 +129,13 @@ func init() {
 }
 func main() {
 	// two types of goroutine will be use
-	WorkGroup.Add(8)
 	flag.Parse()      // get flags
 	PrintParameters() // show parameters of task
 	XLSX := OpenXLSXFile(*InputFile)
-	XLSXChannelOut := make(chan RDP)      // channel to XLSX output
-	ParsedChannelOut := make(chan []byte) // channel to template.Parse output
+	// get rows count from XLSX
+	XLSXConnCount := RowCountXLSX(XLSX, "Аптеки")
+	XLSXChannelOut := make(chan RDP, XLSXConnCount)      // channel to XLSX output
+	ParsedChannelOut := make(chan []byte, XLSXConnCount) // channel to template.Parse output
 	if *FullFile {
 		// declare template
 		MXTTemplate := template.New("MobaXTermTemplate")
@@ -143,10 +149,11 @@ func main() {
 		defer func() {
 			OutFile.Close()
 		}()
-		ReadXLSXFile(XLSX, "Аптеки", XLSXChannelOut) // read from file to channel
 		//end of output file description
-		for i := 0; i <= 3; i++ { //goroutine count will be equal CPU core count
+		for i := 0; i <= XLSXConnCount; i++ { //goroutine count will be equal CPU core count
+			WorkGroup.Add(1)
 			go ParseTemplate(MXTTemplate, XLSXChannelOut, ParsedChannelOut)
+			WorkGroup.Add(1)
 			go WriteToFile(OutFile, ParsedChannelOut)
 		}
 	} else {
@@ -154,6 +161,7 @@ func main() {
 
 		}
 	}
+	ReadXLSXFile(XLSX, "Аптеки", XLSXChannelOut) // read from file to channel
 	WorkGroup.Wait()
 	println("Job done!")
 }
