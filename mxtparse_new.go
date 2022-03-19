@@ -24,10 +24,9 @@ import (
 
 // flag variables initialization, pointer to *type of flag
 var (
-	InputFile     *string
-	OutputFile    *string
-	FullFile      *bool
-	DisplayOutput *bool
+	InputFile  *string
+	OutputFile *string
+	FullFile   *bool
 	// syncronize goroutines
 	WorkGroup sync.WaitGroup
 )
@@ -90,11 +89,6 @@ func PrintParameters() { //preview parameters before continue
 	} else {
 		println("File will be parsed with VNC connections to cashiers PC's")
 	}
-	if *DisplayOutput {
-		println("Progress will be shown on terminal output \n")
-	} else {
-		println("Silent mode activated \n")
-	}
 }
 
 func OpenXLSXFile(Filepath string) *excelize.File {
@@ -124,7 +118,6 @@ func init() {
 	InputFile = flag.String("InputFile", "apt.xlsx", "Filepath to input XLSX file")
 	OutputFile = flag.String("OutputFile", "apt.mxtsessions", "Filepath to output .mxt file")
 	FullFile = flag.Bool("FullFile", true, "Add cashiers PC's to file?")
-	DisplayOutput = flag.Bool("ShowOutput", false, "Output parsed connections to terminal?")
 }
 func main() {
 	// two types of goroutine will be use
