@@ -1,4 +1,5 @@
 # mxtparse_new
-Golang XLSX to MXT file parser - using goroutines
+Golang XLSX to MXT file parser was made for Rigla's tech support tasks
 
-This version have problems with goroutines sync 
+
+This version have problems with goroutines sync, next ver fix it. 
