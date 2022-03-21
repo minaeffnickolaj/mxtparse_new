@@ -35,7 +35,6 @@ var (
 func ParseTemplate(TemplateText *template.Template, IncomeRDPChannel chan RDP, ChannelOut chan []byte) {
 	defer func() { // finish goroutines
 		WorkGroup.Done()
-		println("Parsing connections done!")
 	}()
 	// []byte to get template execute results
 	var ParsedString bytes.Buffer
@@ -48,7 +47,6 @@ func ParseTemplate(TemplateText *template.Template, IncomeRDPChannel chan RDP, C
 func WriteToFile(FileName *os.File, EncodedChannel chan []byte) {
 	defer func() {
 		WorkGroup.Done()
-		println("Writing connections to file done!")
 	}()
 	ParsedString := string(<-EncodedChannel) //[]byte to str
 	//create encoder
@@ -119,6 +117,7 @@ func init() {
 	OutputFile = flag.String("OutputFile", "apt.mxtsessions", "Filepath to output .mxt file")
 	FullFile = flag.Bool("FullFile", true, "Add cashiers PC's to file?")
 }
+
 func main() {
 	// two types of goroutine will be use
 	flag.Parse()      // get flags
@@ -128,7 +127,7 @@ func main() {
 	XLSXConnCount := RowCountXLSX(XLSX, "Аптеки")
 	XLSXChannelOut := make(chan RDP, XLSXConnCount)      // channel to XLSX output
 	ParsedChannelOut := make(chan []byte, XLSXConnCount) // channel to template.Parse output
-	if *FullFile {
+	if !*FullFile {
 		// declare template
 		MXTTemplate := template.New("MobaXTermTemplate")
 		MXTTemplateText := "\n\n[Bookmarks_{{.RecordNum}}]\nSubRep={{.RKName}}\\{{.AptName}}\nImgNum=41\n{{.AptName}}({{.APCode}})=#91#4%{{.ServerAddress}}.apt.rigla.ru%10433%[{{.Username}}]%0%-1%-1%-1%-1%0%0%-1%%%%%0%0%%-1%%-1%-1%0%-1%0%-1#MobaFont%10%0%0%-1%15%236,236,236%30,30,30%180,180,192%0%-1%0%%xterm%-1%-1%_Std_Colors_0_%80%24%0%1%-1%<none>%%0%0%-1#0# #-1"
@@ -142,7 +141,7 @@ func main() {
 			OutFile.Close()
 		}()
 		//end of output file description
-		for i := 0; i <= XLSXConnCount; i++ { //goroutine count will be equal CPU core count
+		for i := 0; i < XLSXConnCount; i++ { //goroutine count will be equal CPU core count
 			WorkGroup.Add(1)
 			go ParseTemplate(MXTTemplate, XLSXChannelOut, ParsedChannelOut)
 			WorkGroup.Add(1)
@@ -162,7 +161,7 @@ func main() {
 			OutFile.Close()
 		}()
 		//end of output file description
-		for i := 0; i <= XLSXConnCount; i++ { //goroutine count will be equal CPU core count
+		for i := 0; i < XLSXConnCount; i++ { //goroutine count will be equal CPU core count
 			WorkGroup.Add(1)
 			go ParseTemplate(MXTTemplate, XLSXChannelOut, ParsedChannelOut)
 			WorkGroup.Add(1)
