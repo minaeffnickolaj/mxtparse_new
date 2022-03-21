@@ -6,7 +6,9 @@ This version have problems with goroutines sync, next ver fix it.
 
 *****************************************************************
 v0.1
-Fix runtime errors \n
+
+Fix runtime errors 
+
 Fix logic error on PrintParameters()
 
 *****************************************************************
