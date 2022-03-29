@@ -10,11 +10,3 @@ type RDP struct {
 	ServerAddress string // Непостоянная часть адреса сервера
 	Username      string // пользователь системы, efarma по умолчанию
 }
-
-// struct of Rigla VNC (cashier PC) connection in MobaXTerm
-
-type VNC struct {
-	APCode        string
-	AptName       string
-	ServerAddress string
-}
